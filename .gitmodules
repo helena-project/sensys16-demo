@@ -1,0 +1,6 @@
+[submodule "reporter/nrf5x-base"]
+	path = nrf5x-base
+	url = git://github.com/lab11/nrf5x-base
+[submodule "tock"]
+	path = tock
+	url = git://github.com/helena-project/tock.git
