@@ -48,8 +48,8 @@ html, body {
 
 .mod {
   padding:5px;
-  width:120px;
-  height:120px;
+/*  width:120px;
+  height:120px;*/
   text-align:center;
   border-radius:13px;
   color:rgba(255,255,255,.7);
@@ -57,8 +57,8 @@ html, body {
 }
 
 .mod svg, table {
-  width:120px;
-  height:90px;
+  width:700px;
+  height:290px;
   transition:all .3s;
   fill:rgba(128,200,225,.7);
 }
@@ -90,10 +90,16 @@ tr:first-child {
   color:rgba(128,200,225,.7);
 }
 
-l/*ine {
+/*line {
   stroke-width:25px;
   stroke:rgba(255,255,255,.8);
 }*/
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 10px;
+}
 
 b {
   font-size:7px;
@@ -112,6 +118,10 @@ image {
 
 .squall {
   position: absolute;
+}
+
+#chart text {
+  font-size: 15px;
 }
 
 @keyframes flash {

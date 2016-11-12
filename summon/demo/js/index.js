@@ -21,7 +21,7 @@ var squall_meta = [
   'Playing pingpong'
 ];
 
-var history = {'time': []};
+var squall_history = [];
 
 var app = {
   // Application Constructor
@@ -47,7 +47,7 @@ var app = {
         ];
 
         document.dispatchEvent(new CustomEvent("data", {detail: arr}));
-      }, 3000);
+      }, 1000);
 
 
       // if (!SIMULATE_PACKETS) {
@@ -66,144 +66,144 @@ var app = {
       app.log("Running Imix/Tock Demo UI on Summon");
     }
   },
-  // Module Constructor
-  createModule: function(i,name) {
-    var svg = d3.select("#mod"+i);
-    var module = document.querySelectorAll(".mod")[i];
-    var titles = [];
-    module.addEventListener("click", app.onClick);
-    module.insertBefore(document.createTextNode(name),module.querySelector("svg"));
-    switch(name) {
-      case "Controller":
-        app.projection = d3.geo.equirectangular();
-        d3.json("js/map.json",function(e,geodata) {
-          if (e) return app.log(e);
-          svg.selectAll("path")
-            .data(topojson.feature(geodata,geodata.objects.collection).features).enter().append("path")
-            .attr("d",d3.geo.path().projection(app.projection.scale(19).translate([120/2,65/2])));
-          svg.append("text").text("--.---\xB0 N ---.---\xB0 E").attr({ "x":60, "y":75, "id":"coord" });
-          svg.append("text").text("----/--/-- --:--:--.---(UTC)").attr({ "x":60, "y":87, "id":"stamp" });
-        });
-        break;
-      case "2.4GHz Spectrum":
-        titles = ["CH","dBm"];
-      case "Audio Frequency":
-        if (!titles.length) titles = ["Hz","dB"]
-        var box = { top:5, right:0, bottom:15, left:20, width:100, height:70 };
-        var g = svg.append("g").attr({ "transform":"translate("+box.left+","+box.top+")" });
-        app.x[i] = d3.scale.ordinal().rangeRoundBands([0, box.width], 0.1, 0.2).domain(MODULES[i].x);
-        app.y[i] = d3.scale.linear().range([box.height, 0]).domain(MODULES[i].y);
-        g.append("g").attr({ "class":"x axis", "transform":"translate(0,"+box.height+")" })
-          .call(d3.svg.axis().scale(app.x[i]).orient("bottom").tickFormat(d3.format(".2s")));
-        g.append("g").attr({ "class":"y axis" })
-          .call(d3.svg.axis().scale(app.y[i]).orient("left"));
-        svg.append("text").text(titles[1]).attr({ "x":7, "y":83, "style":"font-size:5px" });
-        svg.append("text").text(titles[0]).attr({ "x":18, "y":87, "style":"font-size:5px" });
-        break;
-      case "Microwave Radar":
-        svg.append("text").text("0.0").attr({ "x":60, "y":55, "id":"velocity" });
-        svg.append("text").text("m/s").attr({ "x":60, "y":75 });
-        break;
-      case "Ambient":
-        svg.append("image").attr({ "x":20, "y":10, "width":20, "height":20, "xlink:href":"img/temperature.svg" });
-        svg.append("text").attr({ "x":30, "y":40, "id":"temp"}).text("-- \xB0C");
-        svg.append("image").attr({ "x":80, "y":10, "width":20, "height":20, "xlink:href":"img/humidity.svg" });
-        svg.append("text").attr({ "x":90, "y":40, "id":"hum"}).text("-- %");
-        svg.append("image").attr({ "x":20, "y":55, "width":20, "height":20, "xlink:href":"img/light.svg" });
-        svg.append("text").attr({ "x":30, "y":85, "id":"lux"}).text("-- lx");
-        svg.append("image").attr({ "x":80, "y":55, "width":20, "height":20, "xlink:href":"img/pressure.svg" });
-        svg.append("text").attr({ "x":90, "y":85, "id":"pres"}).text("-- kPa");
-        break;
-      case "UCSD Air Quality":
-        svg.append("text").attr({ "x":60, "y":14, "class":"unit"}).text("CO\u2082");
-        svg.append("text").attr({ "x":60, "y":32, "id":"co2"}).text("---");
-        svg.append("text").attr({ "x":60, "y":41}).text("ppm");
-        svg.append("text").attr({ "x":30, "y":57, "class":"unit"}).text("VOC(PID)");
-        svg.append("text").attr({ "x":30, "y":75, "id":"vocp"}).text("---");
-        svg.append("text").attr({ "x":30, "y":84}).text("ppb");
-        svg.append("text").attr({ "x":90, "y":57, "class":"unit"}).text("VOC(IAQ)");
-        svg.append("text").attr({ "x":90, "y":75, "id":"voci"}).text("---");
-        svg.append("text").attr({ "x":90, "y":84}).text("ppb");
-        break;
-      case "Radio":
-        var table = svg.append("foreignObject").attr({ "width":"100%", "height":"100%"}).append("xhtml:table");
-        table.append("tr").html("<td>RADIO</td><td class='pkt'>PACKETS</td><td class='byt'>BYTES</td>");
-        table.append("tr").html("<td>LoRa </td><td class='lora pkt'>0</td><td class='lora byt'>0</td>");
-        table.append("tr").html("<td>BLE  </td><td class='ble  pkt'>0</td><td class='ble  byt'>0</td>");
-        table.append("tr").html("<td>Cell </td><td class='cell pkt'>0</td><td class='cell byt'>0</td>");
-        break;
-      case "Power Supply":
-        var table = svg.append("foreignObject").attr({ "width":"100%", "height":"100%"}).append("xhtml:table");
-        table.append("tr").html("<td>MODULE</td><td>STATE</td><td class='mah'>ENERGY[mAh]</td>");
-        for (i=0; i<8; i=[1,2,5,8,8,6,7,8][i])
-          table.append("tr").html("<td>"+i+"</td><td class='m"+i+" state'>-</td><td class='m"+i+" mah'>-</td>");
-        break;
-    }
-  },
-  // Module Data Updater
-  updateModule: function(i,data) {
-    var svg = d3.select("#mod"+i);
-    var mod = MODULES[i];
-    var values = [];
-    switch(mod.name) {
-      case "Controller":
-        var lat = data.latitude * (data.latitude_direction=="N"?1:-1);
-        var lon = data.longitude * (data.longitude_direction=="E"?1:-1);
-        svg.selectAll("line").remove();
-        svg.selectAll("line")
-          .data([[[lon,-90],[lon,90]],[[-180,lat],[180,lat]]]).enter().append("line")
-          .attr("x1", function(d) { return app.projection(d[0])[0]; })
-          .attr("y1", function(d) { return app.projection(d[0])[1]; })
-          .attr("x2", function(d) { return app.projection(d[1])[0]; })
-          .attr("y2", function(d) { return app.projection(d[1])[1]; });
-        svg.select("#coord").text(
-          data.latitude.toFixed(3) + "\xB0 " + data.latitude_direction + " " +
-          data.longitude.toFixed(3)+ "\xB0 " + data.longitude_direction );
-        svg.select("#stamp").text(data.timestamp.replace('T',' ').replace('Z','')+"(UTC)");
-        break;
-      case "2.4GHz Spectrum":
-        for (n in mod.x) values.push({ x:mod.x[n], y:data["channel_"+mod.x[n]] });
-      case "Audio Frequency":
-        if (!values.length) for (n in mod.x) values.push({ x:mod.x[n], y:data[mod.x[n]+"Hz"] });
-        svg.select("g").selectAll(".bar").remove();
-        svg.select("g").selectAll(".bar").data(values).enter().append("rect")
-          .attr("class", "bar")
-          .attr("x", function(d) { return app.x[i](d.x); })
-          .attr("width", app.x[i].rangeBand())
-          .attr("y", function(d) { return app.y[i](d.y); })
-          .attr("height", function(d) { return 70 - app.y[i](d.y); });
-        break;
-      case "Microwave Radar":
-        svg.select("text").text( (data["motion"] * data["velocity_m/s"]).toFixed(1) );
-        break;
-      case "Ambient":
-        svg.select("#temp").text(data.temperature_c.toFixed(1) + " \xB0C");
-        svg.select("#hum" ).text(data.humidity.toFixed(1) + " %");
-        svg.select("#lux" ).text(data.light_lux.toFixed(1) + " lx");
-        svg.select("#pres").text((data.pressure_pascals/1000).toFixed(1) + " kPa");
-        break;
-      case "UCSD Air Quality":
-        svg.select("#co2" ).text(data.co2_ppm);
-        svg.select("#vocp").text(data.VOC_PID_ppb);
-        svg.select("#voci").text(data.VOC_IAQ_ppb);
-        break;
-      case "Radio":
-        var packets = { lora:0, ble:0 }
-        for (n in data) {
-          if (n.endsWith("ble_packets_sent")) packets.ble += data[n];
-          else if (n.endsWith("lora_packets_sent")) packets.lora += data[n];
-        }
-        svg.select(".ble.pkt").text(packets.ble);
-        svg.select(".lora.pkt").text(packets.lora);
-        break;
-      case "Power Supply":
-        for (i=0; i<8; i=[1,2,5,8,8,6,7,8][i]) {
-          svg.selectAll(".state.m"+i).text(data["module"+i+"_enabled"]?"On":"Off");
-          svg.selectAll(".mah.m"+i).text(data["module"+i+"_energy_mAh"].toFixed(0));
-        }
-        break;
-    }
-  },
+  // // Module Constructor
+  // createModule: function(i,name) {
+  //   var svg = d3.select("#mod"+i);
+  //   var module = document.querySelectorAll(".mod")[i];
+  //   var titles = [];
+  //   module.addEventListener("click", app.onClick);
+  //   module.insertBefore(document.createTextNode(name),module.querySelector("svg"));
+  //   switch(name) {
+  //     case "Controller":
+  //       app.projection = d3.geo.equirectangular();
+  //       d3.json("js/map.json",function(e,geodata) {
+  //         if (e) return app.log(e);
+  //         svg.selectAll("path")
+  //           .data(topojson.feature(geodata,geodata.objects.collection).features).enter().append("path")
+  //           .attr("d",d3.geo.path().projection(app.projection.scale(19).translate([120/2,65/2])));
+  //         svg.append("text").text("--.---\xB0 N ---.---\xB0 E").attr({ "x":60, "y":75, "id":"coord" });
+  //         svg.append("text").text("----/--/-- --:--:--.---(UTC)").attr({ "x":60, "y":87, "id":"stamp" });
+  //       });
+  //       break;
+  //     case "2.4GHz Spectrum":
+  //       titles = ["CH","dBm"];
+  //     case "Audio Frequency":
+  //       if (!titles.length) titles = ["Hz","dB"]
+  //       var box = { top:5, right:0, bottom:15, left:20, width:100, height:70 };
+  //       var g = svg.append("g").attr({ "transform":"translate("+box.left+","+box.top+")" });
+  //       app.x[i] = d3.scale.ordinal().rangeRoundBands([0, box.width], 0.1, 0.2).domain(MODULES[i].x);
+  //       app.y[i] = d3.scale.linear().range([box.height, 0]).domain(MODULES[i].y);
+  //       g.append("g").attr({ "class":"x axis", "transform":"translate(0,"+box.height+")" })
+  //         .call(d3.svg.axis().scale(app.x[i]).orient("bottom").tickFormat(d3.format(".2s")));
+  //       g.append("g").attr({ "class":"y axis" })
+  //         .call(d3.svg.axis().scale(app.y[i]).orient("left"));
+  //       svg.append("text").text(titles[1]).attr({ "x":7, "y":83, "style":"font-size:5px" });
+  //       svg.append("text").text(titles[0]).attr({ "x":18, "y":87, "style":"font-size:5px" });
+  //       break;
+  //     case "Microwave Radar":
+  //       svg.append("text").text("0.0").attr({ "x":60, "y":55, "id":"velocity" });
+  //       svg.append("text").text("m/s").attr({ "x":60, "y":75 });
+  //       break;
+  //     case "Ambient":
+  //       svg.append("image").attr({ "x":20, "y":10, "width":20, "height":20, "xlink:href":"img/temperature.svg" });
+  //       svg.append("text").attr({ "x":30, "y":40, "id":"temp"}).text("-- \xB0C");
+  //       svg.append("image").attr({ "x":80, "y":10, "width":20, "height":20, "xlink:href":"img/humidity.svg" });
+  //       svg.append("text").attr({ "x":90, "y":40, "id":"hum"}).text("-- %");
+  //       svg.append("image").attr({ "x":20, "y":55, "width":20, "height":20, "xlink:href":"img/light.svg" });
+  //       svg.append("text").attr({ "x":30, "y":85, "id":"lux"}).text("-- lx");
+  //       svg.append("image").attr({ "x":80, "y":55, "width":20, "height":20, "xlink:href":"img/pressure.svg" });
+  //       svg.append("text").attr({ "x":90, "y":85, "id":"pres"}).text("-- kPa");
+  //       break;
+  //     case "UCSD Air Quality":
+  //       svg.append("text").attr({ "x":60, "y":14, "class":"unit"}).text("CO\u2082");
+  //       svg.append("text").attr({ "x":60, "y":32, "id":"co2"}).text("---");
+  //       svg.append("text").attr({ "x":60, "y":41}).text("ppm");
+  //       svg.append("text").attr({ "x":30, "y":57, "class":"unit"}).text("VOC(PID)");
+  //       svg.append("text").attr({ "x":30, "y":75, "id":"vocp"}).text("---");
+  //       svg.append("text").attr({ "x":30, "y":84}).text("ppb");
+  //       svg.append("text").attr({ "x":90, "y":57, "class":"unit"}).text("VOC(IAQ)");
+  //       svg.append("text").attr({ "x":90, "y":75, "id":"voci"}).text("---");
+  //       svg.append("text").attr({ "x":90, "y":84}).text("ppb");
+  //       break;
+  //     case "Radio":
+  //       var table = svg.append("foreignObject").attr({ "width":"100%", "height":"100%"}).append("xhtml:table");
+  //       table.append("tr").html("<td>RADIO</td><td class='pkt'>PACKETS</td><td class='byt'>BYTES</td>");
+  //       table.append("tr").html("<td>LoRa </td><td class='lora pkt'>0</td><td class='lora byt'>0</td>");
+  //       table.append("tr").html("<td>BLE  </td><td class='ble  pkt'>0</td><td class='ble  byt'>0</td>");
+  //       table.append("tr").html("<td>Cell </td><td class='cell pkt'>0</td><td class='cell byt'>0</td>");
+  //       break;
+  //     case "Power Supply":
+  //       var table = svg.append("foreignObject").attr({ "width":"100%", "height":"100%"}).append("xhtml:table");
+  //       table.append("tr").html("<td>MODULE</td><td>STATE</td><td class='mah'>ENERGY[mAh]</td>");
+  //       for (i=0; i<8; i=[1,2,5,8,8,6,7,8][i])
+  //         table.append("tr").html("<td>"+i+"</td><td class='m"+i+" state'>-</td><td class='m"+i+" mah'>-</td>");
+  //       break;
+  //   }
+  // },
+  // // Module Data Updater
+  // updateModule: function(i,data) {
+  //   var svg = d3.select("#mod"+i);
+  //   var mod = MODULES[i];
+  //   var values = [];
+  //   switch(mod.name) {
+  //     case "Controller":
+  //       var lat = data.latitude * (data.latitude_direction=="N"?1:-1);
+  //       var lon = data.longitude * (data.longitude_direction=="E"?1:-1);
+  //       svg.selectAll("line").remove();
+  //       svg.selectAll("line")
+  //         .data([[[lon,-90],[lon,90]],[[-180,lat],[180,lat]]]).enter().append("line")
+  //         .attr("x1", function(d) { return app.projection(d[0])[0]; })
+  //         .attr("y1", function(d) { return app.projection(d[0])[1]; })
+  //         .attr("x2", function(d) { return app.projection(d[1])[0]; })
+  //         .attr("y2", function(d) { return app.projection(d[1])[1]; });
+  //       svg.select("#coord").text(
+  //         data.latitude.toFixed(3) + "\xB0 " + data.latitude_direction + " " +
+  //         data.longitude.toFixed(3)+ "\xB0 " + data.longitude_direction );
+  //       svg.select("#stamp").text(data.timestamp.replace('T',' ').replace('Z','')+"(UTC)");
+  //       break;
+  //     case "2.4GHz Spectrum":
+  //       for (n in mod.x) values.push({ x:mod.x[n], y:data["channel_"+mod.x[n]] });
+  //     case "Audio Frequency":
+  //       if (!values.length) for (n in mod.x) values.push({ x:mod.x[n], y:data[mod.x[n]+"Hz"] });
+  //       svg.select("g").selectAll(".bar").remove();
+  //       svg.select("g").selectAll(".bar").data(values).enter().append("rect")
+  //         .attr("class", "bar")
+  //         .attr("x", function(d) { return app.x[i](d.x); })
+  //         .attr("width", app.x[i].rangeBand())
+  //         .attr("y", function(d) { return app.y[i](d.y); })
+  //         .attr("height", function(d) { return 70 - app.y[i](d.y); });
+  //       break;
+  //     case "Microwave Radar":
+  //       svg.select("text").text( (data["motion"] * data["velocity_m/s"]).toFixed(1) );
+  //       break;
+  //     case "Ambient":
+  //       svg.select("#temp").text(data.temperature_c.toFixed(1) + " \xB0C");
+  //       svg.select("#hum" ).text(data.humidity.toFixed(1) + " %");
+  //       svg.select("#lux" ).text(data.light_lux.toFixed(1) + " lx");
+  //       svg.select("#pres").text((data.pressure_pascals/1000).toFixed(1) + " kPa");
+  //       break;
+  //     case "UCSD Air Quality":
+  //       svg.select("#co2" ).text(data.co2_ppm);
+  //       svg.select("#vocp").text(data.VOC_PID_ppb);
+  //       svg.select("#voci").text(data.VOC_IAQ_ppb);
+  //       break;
+  //     case "Radio":
+  //       var packets = { lora:0, ble:0 }
+  //       for (n in data) {
+  //         if (n.endsWith("ble_packets_sent")) packets.ble += data[n];
+  //         else if (n.endsWith("lora_packets_sent")) packets.lora += data[n];
+  //       }
+  //       svg.select(".ble.pkt").text(packets.ble);
+  //       svg.select(".lora.pkt").text(packets.lora);
+  //       break;
+  //     case "Power Supply":
+  //       for (i=0; i<8; i=[1,2,5,8,8,6,7,8][i]) {
+  //         svg.selectAll(".state.m"+i).text(data["module"+i+"_enabled"]?"On":"Off");
+  //         svg.selectAll(".mah.m"+i).text(data["module"+i+"_energy_mAh"].toFixed(0));
+  //       }
+  //       break;
+  //   }
+  // },
   // App Ready Event Handler
   onAppReady: function() {
     app.log("onAppReady");
@@ -226,15 +226,21 @@ var app = {
       '4': data.detail[4],
     };
 
+    // Add to history
+    squall_history.push({
+      '0': data.detail[0],
+      '1': data.detail[1],
+      '2': data.detail[2],
+      '3': data.detail[3],
+      '4': data.detail[4],
+      'timestamp': new Date()
+    });
 
-    for (key in squall_to_imix) {
-      // Make sure there is room
-      if (!(key in history)) {
-        history[key] = [];
-      }
-
-      history[key].unshift(squall_to_imix[key]);
+    // Remove history greater than a value
+    while (squall_history.length > 20) {
+      squall_history.splice(0, 1);
     }
+
 
     // Keep track of the number of squalls at each imix
     var attached_squalls = [0, 0, 0, 0, 0];
@@ -268,6 +274,106 @@ var app = {
 
       attached_squalls[imix_id] += 1;
     }
+
+
+
+    if (squall_history.length < 3) {
+      return;
+    }
+
+
+    var svg = d3.select("#chart");
+    var margin = {top: 20, right: 80, bottom: 30, left: 50};
+    var width = 600;
+    var height = 220;
+
+
+
+    var g = svg.selectAll(".maing")
+      .data([0])
+      .enter()
+        .append("g")
+        .attr("class", "maing")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // var parseTime = d3.timeParse("%Y%m%d");
+
+    var x = d3.scaleTime().range([0, width]);
+    var y = d3.scaleLinear().range([height, 0]);
+
+
+      // x.domain(d3.extent(squall_history, function(d) { console.log("HKJHDKJS"); console.log(d.timestamp); return d.timestamp; }));
+      // x.domain(d3.extent(k.values, function(d) { return d.timestamp; }));
+      // console.log(squall_history)
+      x.domain(d3.extent(squall_history, function(d) { return d.timestamp; }));
+
+
+
+
+
+      y.domain([0, 4]);
+
+
+
+      var xaxis = g.selectAll(".axisx")
+        .data([0])
+        .enter()
+          .append("g")
+          .attr("class", "axis axisx")
+          .attr("transform", "translate(0," + height + ")");
+
+// console.log(xaxis)
+// if (xaxis.length > 0) {
+//       xaxis.remove()
+//       console.log('remove')
+//     } else {
+
+//       xaxis = g.append("g")
+//         .attr("class", "axis axisx whatt")
+//         .attr("transform", "translate(0," + height + ")");
+//       }
+
+// console.log(xaxis)
+// console.log(x)
+          // xaxis.call(d3.axisBottom().scale(x).tickFormat(d3.timeFormat("%H:%M:%S")));
+          svg.selectAll("g.axisx").call(d3.axisBottom().scale(x).tickFormat(d3.timeFormat("%H:%M:%S")));
+
+
+          // g.select('.axisx')
+          // .transition()
+          // .duration(500)
+          // .call(d3.axisBottom().scale(x).tickFormat(d3.timeFormat("%H:%M:%S")));
+
+
+  // xaxis.remove()
+
+
+        var yaxis = g.selectAll("axis--y")
+          .data([0])
+          .enter()
+            .append("g")
+            .attr("class", "axis axis--y");
+
+        yaxis.call(d3.axisLeft(y).tickFormat(d3.format("d")).ticks(5));
+
+      var line = d3.line()
+        .x(function(d) { return x(d.timestamp); })
+        .y(function(d) { return y(d[0]); });
+
+
+
+      // Create line if not exist
+      var lines = g.selectAll(".line")
+        .data([0])
+        .enter()
+          .append("path")
+          .attr("class", "line");
+
+      // Update line
+      svg.selectAll("path.line").attr("d", line(squall_history));
+
+
+
 
 
     // app.updateModule(MODULES.findIndex(function(x){return x.dev==data.detail.device.substr(9)}),data.detail);
