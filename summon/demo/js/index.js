@@ -38,6 +38,17 @@ var app = {
     $("#sign").on("click", ".squall", app.onClick);
     $("#sign").on("click", "#closegraph", app.onCloseGraph);
 
+    var svg = d3.select("#chart");
+    var margin = {top: 20, right: 80, bottom: 30, left: 50};
+    var width = 600;
+    var height = 220;
+
+
+
+    var g = svg.append("g")
+        .attr("class", "maing")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
 
     // for (i=0; i<Math.min(MODULES.length,8); i++) app.createModule(i,MODULES[i].name);
     if (typeof summon == "undefined") {
@@ -297,12 +308,12 @@ var app = {
 
 
 
-    var g = svg.selectAll(".maing")
-      .data([0])
-      .enter()
-        .append("g")
-        .attr("class", "maing")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    var g = svg.selectAll(".maing");
+      // .data([0])
+      // .enter()
+      //   .append("g")
+      //   .attr("class", "maing")
+      //   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     // var parseTime = d3.timeParse("%Y%m%d");
 
@@ -387,6 +398,22 @@ var app = {
 
       // Update line
       svg.selectAll("path.line").attr("d", line(squall_history));
+
+
+
+      g.selectAll(".dot")
+        .data(squall_history)
+      .enter().append("circle")
+        .attr("class", "dot")
+        .attr("r", 10)
+        .attr("cx", function(d) { return x(d.timestamp); })
+        .attr("cy", function(d) { return y(d[active_squall_id]); });
+
+      svg.selectAll("g circle.dot")
+        .data(squall_history)
+        .attr("r", 10)
+        .attr("cx", function(d) { return x(d.timestamp); })
+        .attr("cy", function(d) { return y(d[active_squall_id]); });
 
 
 
