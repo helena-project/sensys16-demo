@@ -23,6 +23,9 @@ var squall_meta = [
 
 var squall_history = [];
 
+// current squall to graph
+var active_squall_id = null;
+
 var app = {
   // Application Constructor
   initialize: function() {
@@ -30,7 +33,12 @@ var app = {
     document.addEventListener("resume", app.onAppReady, false);
     document.addEventListener("pause", app.onPause, false);
     document.addEventListener("data", app.onData, false);
-    // document.querySelector("#rect").addEventListener("click", app.onClick);
+    // document.querySelector(".squall").addEventListener("click", app.onClick);
+
+    $("#sign").on("click", ".squall", app.onClick);
+    $("#sign").on("click", "#closegraph", app.onCloseGraph);
+
+
     // for (i=0; i<Math.min(MODULES.length,8); i++) app.createModule(i,MODULES[i].name);
     if (typeof summon == "undefined") {
 
@@ -217,7 +225,7 @@ var app = {
   },
   // New Data Received Event Handler
   onData: function(data) {
-    console.log(data.detail);
+    // console.log(data.detail);
     var squall_to_imix = {
       '0': data.detail[0],
       '1': data.detail[1],
@@ -277,7 +285,7 @@ var app = {
 
 
 
-    if (squall_history.length < 3) {
+    if (active_squall_id == null) {
       return;
     }
 
@@ -319,8 +327,16 @@ var app = {
         .data([0])
         .enter()
           .append("g")
-          .attr("class", "axis axisx")
-          .attr("transform", "translate(0," + height + ")");
+            .attr("class", "axis axisx")
+            .attr("transform", "translate(0," + height + ")")
+          .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", -30)
+            .attr("x", 110)
+            // .attr("dy", "2.71em")
+            .attr("fill", "#000")
+            .attr("class", "ylabel")
+            .text("Imix ID");
 
 // console.log(xaxis)
 // if (xaxis.length > 0) {
@@ -336,7 +352,7 @@ var app = {
 // console.log(xaxis)
 // console.log(x)
           // xaxis.call(d3.axisBottom().scale(x).tickFormat(d3.timeFormat("%H:%M:%S")));
-          svg.selectAll("g.axisx").call(d3.axisBottom().scale(x).tickFormat(d3.timeFormat("%H:%M:%S")));
+          svg.selectAll("g.axisx").call(d3.axisBottom().scale(x).tickFormat(d3.timeFormat("%H:%M:%S")).ticks(5));
 
 
           // g.select('.axisx')
@@ -358,7 +374,7 @@ var app = {
 
       var line = d3.line()
         .x(function(d) { return x(d.timestamp); })
-        .y(function(d) { return y(d[0]); });
+        .y(function(d) { return y(d[active_squall_id]); });
 
 
 
@@ -504,13 +520,38 @@ var app = {
   },
   // Module Click Event Handler
   onClick: function() {
-    if (this.id!="rect" && document.body.style.transform=="") {
-      el = this.getBoundingClientRect();
-      x = window.innerWidth / 2 - el.width / 2 - el.left;
-      y = window.innerHeight / 2 - el.height / 2 - el.top;
-      s = Math.min(window.innerHeight,window.innerWidth) / (el.width + 20);
-      document.body.style.transform = "scale("+s+") translate("+x+"px,"+y+"px)";
-    } else document.body.style.transform = "";
+    // if (this.id!="rect" && document.body.style.transform=="") {
+    //   el = this.getBoundingClientRect();
+    //   x = window.innerWidth / 2 - el.width / 2 - el.left;
+    //   y = window.innerHeight / 2 - el.height / 2 - el.top;
+    //   s = Math.min(window.innerHeight,window.innerWidth) / (el.width + 20);
+    //   document.body.style.transform = "scale("+s+") translate("+x+"px,"+y+"px)";
+    // } else document.body.style.transform = "";
+
+
+
+    var id = $(this).attr('id');
+    active_squall_id = parseInt(id.substr(6, 1));
+    console.log(active_squall_id)
+
+    $(".mod b").text("Squall " + active_squall_id);
+    $("#chartfo").attr("x", 200);
+    $("#chartfo").attr("y", 200);
+
+
+  },
+  onCloseGraph: function() {
+
+    // var id = $(this).attr('id');
+    // active_squall_id = parseInt(id.substr(6, 1));
+    // console.log(active_squall_id)
+
+    // $(".mod b").text("Squall " + active_squall_id);
+    active_squall_id = null;
+    $("#chartfo").attr("x", 4000);
+    $("#chartfo").attr("y", 4000);
+
+
   },
   // Function to simulate data packets
   simulatePackets: function() {
