@@ -34,27 +34,27 @@
           <rect width="100%" height="100%" fill="url(#a)"/>
         </mask>
         <path id="imixoutline" fill="url(#d)" stroke="rgba(255,255,255,.3)" class="st0" d="M0,280.8h86.6c8,0,14.5-6.5,14.4-14.5l-0.2-28.7h144v280.8h-144v-28.8c0-8-6.4-14.4-14.4-14.4H0 V280.8z"/>
-        <g id="imixa" height="670" width="1100" transform="scale(0.35)">
+        <g id="imixa" height="670" width="1100" transform="scale(0.45)">
           <use xlink:href="#imixoutline"/>
           <text fill="rgba(255,255,255,.7)" x="120" y="380" text-anchor="middle" style='font-size:80px'>IMIX</text>
           <text fill="rgba(255,255,255,.7)" x="120" y="450" text-anchor="middle" style='font-size:80px; text-align: center'>A</text>
         </g>
-        <g id="imixb" height="670" width="1100" transform="scale(0.35)">
+        <g id="imixb" height="670" width="1100" transform="scale(0.45)">
           <use xlink:href="#imixoutline"/>
           <text fill="rgba(255,255,255,.7)" x="120" y="380" text-anchor="middle" style='font-size:80px'>IMIX</text>
           <text fill="rgba(255,255,255,.7)" x="120" y="450" text-anchor="middle" style='font-size:80px; text-align: center'>B</text>
         </g>
-        <g id="imixc" height="670" width="1100" transform="scale(0.35)">
+        <g id="imixc" height="670" width="1100" transform="scale(0.45)">
           <use xlink:href="#imixoutline"/>
           <text fill="rgba(255,255,255,.7)" x="120" y="380" text-anchor="middle" style='font-size:80px'>IMIX</text>
           <text fill="rgba(255,255,255,.7)" x="120" y="450" text-anchor="middle" style='font-size:80px; text-align: center'>C</text>
         </g>
-        <g id="imixd" height="670" width="1100" transform="scale(0.35)">
+        <g id="imixd" height="670" width="1100" transform="scale(0.45)">
           <use xlink:href="#imixoutline"/>
           <text fill="rgba(255,255,255,.7)" x="120" y="380" text-anchor="middle" style='font-size:80px'>IMIX</text>
           <text fill="rgba(255,255,255,.7)" x="120" y="450" text-anchor="middle" style='font-size:80px; text-align: center'>D</text>
         </g>
-        <g id="imixe" height="670" width="1100" transform="scale(0.35)">
+        <g id="imixe" height="670" width="1100" transform="scale(0.45)">
           <use xlink:href="#imixoutline"/>
           <text fill="rgba(255,255,255,.7)" x="120" y="380" text-anchor="middle" style='font-size:80px'>IMIX</text>
           <text fill="rgba(255,255,255,.7)" x="120" y="450" text-anchor="middle" style='font-size:80px; text-align: center'>E</text>
@@ -71,7 +71,6 @@
         </g>
 
 
-
       </defs>
 
 
@@ -80,15 +79,22 @@
       <!-- SIGN -->
       <!-- <rect fill="url(#d)" stroke="rgba(255,255,255,.3)" height="670" width="470" ry="13" rx="13" x="15" y="15" opacity=".95"/> -->
       <!-- <g height="670" width="1100" transform="translate(570,250) scale(0.35)" fill="url(#e)"> -->
-        <use xlink:href="#imixa" transform="translate(570, 250)" />
-        <use xlink:href="#imixb" transform="translate(300, 100)" />
-        <use xlink:href="#imixc" transform="translate(850, 100)" />
-        <use xlink:href="#imixd" transform="translate(300, 400)" />
-        <use xlink:href="#imixe" transform="translate(850, 400)" />
+        <use xlink:href="#imixa" transform="translate(530, 200)" />
+        <use xlink:href="#imixb" transform="translate(270, 50)" />
+        <use xlink:href="#imixc" transform="translate(850, 50)" />
+        <use xlink:href="#imixd" transform="translate(270, 350)" />
+        <use xlink:href="#imixe" transform="translate(850, 350)" />
 
-        <use xlink:href="#squall" transform="translate(680, 350)" />
-
-        <text id="name" style="fill:#FFBF00; opacity:1; font-size:25px" text-anchor="start" x="700" y="358">Brad's Pocket</text>
+        <use id="squall0" class="squall" xlink:href="#squall" x="660" y="330" />
+        <text id="squall0_name" class="squall" style="fill:#FFBF00; opacity:1; font-size:25px" text-anchor="start" x="680" y="338"></text>
+        <use id="squall1" class="squall" xlink:href="#squall" x="660" y="330" />
+        <text id="squall1_name" class="squall" style="fill:#FFBF00; opacity:1; font-size:25px" text-anchor="start" x="680" y="338"></text>
+        <use id="squall2" class="squall" xlink:href="#squall" x="660" y="330" />
+        <text id="squall2_name" class="squall" style="fill:#FFBF00; opacity:1; font-size:25px" text-anchor="start" x="680" y="338"></text>
+        <use id="squall3" class="squall" xlink:href="#squall" x="660" y="330" />
+        <text id="squall3_name" class="squall" style="fill:#FFBF00; opacity:1; font-size:25px" text-anchor="start" x="680" y="338"></text>
+        <use id="squall4" class="squall" xlink:href="#squall" x="660" y="330" />
+        <text id="squall4_name" class="squall" style="fill:#FFBF00; opacity:1; font-size:25px" text-anchor="start" x="680" y="338"></text>
 
         <!-- <line x1="400" y1="290" x2="530" y2="360" stroke="#fff" stroke-width="3" marker-end="url(#arrow)" /> -->
 
@@ -136,6 +142,10 @@
     <!-- </center> -->
     <script src="https://d3js.org/d3.v3.min.js"></script>
     <script src="https://d3js.org/topojson.v1.min.js"></script>
+    <script
+        src="https://code.jquery.com/jquery-3.1.1.min.js"
+        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+        crossorigin="anonymous"></script>
     <script src="js/generate_test_data.js"></script>
     <script language='javascript' src="js/browserMqtt.js"></script>
     <script src="js/index.js"></script>

@@ -13,6 +13,16 @@ var MODULES = [
   { name:"Microwave Radar", dev:"microwave_radar" }
 ]
 
+var squall_meta = [
+  'Brads Pocket',
+  'Next to Amit',
+  'Branden lost this one',
+  'Gravy',
+  'Playing pingpong'
+];
+
+var history = {'time': []};
+
 var app = {
   // Application Constructor
   initialize: function() {
@@ -20,22 +30,41 @@ var app = {
     document.addEventListener("resume", app.onAppReady, false);
     document.addEventListener("pause", app.onPause, false);
     document.addEventListener("data", app.onData, false);
-    document.querySelector("#rect").addEventListener("click", app.onClick);
-    for (i=0; i<Math.min(MODULES.length,8); i++) app.createModule(i,MODULES[i].name);
+    // document.querySelector("#rect").addEventListener("click", app.onClick);
+    // for (i=0; i<Math.min(MODULES.length,8); i++) app.createModule(i,MODULES[i].name);
     if (typeof summon == "undefined") {
-      if (!SIMULATE_PACKETS) {
-        var client = mqtt.connect("ws://signpost.j2x.us:9001/mqtt");
-        client.on("connect", function () {
-          client.subscribe('signpost');
-        });
-        client.on("message", function(topic, payload) {
-          var data = JSON.parse(payload.toString());
-          SIMULATE_PACKETS=true;
-          document.dispatchEvent(new CustomEvent("data",{detail:data}));
-        });
-        setTimeout(function(){if(!SIMULATE_PACKETS)app.simulatePackets()},30000); // simulate if nothing happens in 30s
-      } else app.simulatePackets();
-    } else app.log("Running Signpost UI on Summon");
+
+      setInterval(function () {
+        function getRandomInt(min, max) {
+          return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        var arr = [
+          getRandomInt(0, 4),
+          getRandomInt(0, 4),
+          getRandomInt(0, 4),
+          getRandomInt(0, 4),
+          getRandomInt(0, 4),
+        ];
+
+        document.dispatchEvent(new CustomEvent("data", {detail: arr}));
+      }, 3000);
+
+
+      // if (!SIMULATE_PACKETS) {
+      //   var client = mqtt.connect("ws://signpost.j2x.us:9001/mqtt");
+      //   client.on("connect", function () {
+      //     client.subscribe('signpost');
+      //   });
+      //   client.on("message", function(topic, payload) {
+      //     var data = JSON.parse(payload.toString());
+      //     SIMULATE_PACKETS=true;
+      //     document.dispatchEvent(new CustomEvent("data",{detail:data}));
+      //   });
+      //   setTimeout(function(){if(!SIMULATE_PACKETS)app.simulatePackets()},30000); // simulate if nothing happens in 30s
+      // } else app.simulatePackets();
+    } else {
+      app.log("Running Imix/Tock Demo UI on Summon");
+    }
   },
   // Module Constructor
   createModule: function(i,name) {
@@ -186,9 +215,62 @@ var app = {
     app.log("Pause");
     summon.bluetooth.stopScan();
   },
-  // New Data Received Event Handeler
+  // New Data Received Event Handler
   onData: function(data) {
-    app.updateModule(MODULES.findIndex(function(x){return x.dev==data.detail.device.substr(9)}),data.detail);
+    console.log(data.detail);
+    var squall_to_imix = {
+      '0': data.detail[0],
+      '1': data.detail[1],
+      '2': data.detail[2],
+      '3': data.detail[3],
+      '4': data.detail[4],
+    };
+
+
+    for (key in squall_to_imix) {
+      // Make sure there is room
+      if (!(key in history)) {
+        history[key] = [];
+      }
+
+      history[key].unshift(squall_to_imix[key]);
+    }
+
+    // Keep track of the number of squalls at each imix
+    var attached_squalls = [0, 0, 0, 0, 0];
+
+    var positions = [
+      {x: 660, y: 330},
+      {x: 400, y: 180},
+      {x: 980, y: 180},
+      {x: 400, y: 480},
+      {x: 980, y: 480},
+    ];
+    var name_offset_x = 20;
+    var name_offset_y = 8;
+
+
+    for (var squall_id=0; squall_id<5; squall_id++) {
+
+      var imix_id = squall_to_imix[squall_id];
+      var index = attached_squalls[imix_id];
+      var x = positions[imix_id].x;
+      var y = positions[imix_id].y + (index * 35);
+      var x_name = x + name_offset_x;
+      var y_name = y + name_offset_y;
+
+      // Update main UI
+      $('#squall' + squall_id).attr('x', x);
+      $('#squall' + squall_id).attr('y', y);
+      $('#squall'+squall_id+'_name').attr('x', x_name);
+      $('#squall'+squall_id+'_name').attr('y', y_name);
+      $('#squall'+squall_id+'_name').text(squall_meta[squall_id]);
+
+      attached_squalls[imix_id] += 1;
+    }
+
+
+    // app.updateModule(MODULES.findIndex(function(x){return x.dev==data.detail.device.substr(9)}),data.detail);
   },
   // Bluetooth Enabled Callback
   onEnable: function() {
