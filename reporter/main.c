@@ -24,7 +24,7 @@ void print_hex(const uint8_t *buf, int len) {
 }
 
 typedef struct Collector {
- char id;
+ uint16_t id;
  char closest_squall[SQUALL_ADDRESS_SIZE];
  char rssi;
 } Collector;
@@ -48,15 +48,22 @@ int callback(void* buffer, int buffer_len, uint16_t src, uint16_t dest, uint16_t
   }
   rssi = bytes[SQUALL_ADDRESS_SIZE];
 
-  //TODO: find the right collector
+  //find the right collector
+  int collector_index = -1;
+  for (int i = 0; i < MAX_COLLECTOR_COUNT; i++){
+    if (collectors[i].id == src){
+        collector_index = i;
+        break;
+    }
+  }
 
-  //if it didn't find the right squall, make it create a new one in the next slot
+  //if it didn't find the right collector, make it create a new one in the next slot
   if (collector_index == -1){
       collector_index = collector_count;
       collector_count ++;
   }
 
-  collectors[collector_index] = { collector_index, address, rssi };
+  collectors[collector_index] = { src, address, rssi };
 
   return 0;
 }
