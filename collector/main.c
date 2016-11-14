@@ -21,7 +21,7 @@ static Squall squalls[SQUALL_COUNT];
  * Sends the ID of the closest squall (one byte) and its RSSI (two bytes)
  */
 void send_to_receiver() {
-  int rssi[SQUALL_COUNT];
+  uint8_t rssi[SQUALL_COUNT];
 
   for (int i = 0; i < SQUALL_COUNT; i++){
     Squall *sq = &squalls[i];
@@ -29,7 +29,7 @@ void send_to_receiver() {
     sq->rssi = 0;
   }
 
-  rf233_tx_data(0x00, (uint8_t*)rssi, sizeof(int) * SQUALL_COUNT);
+  rf233_tx_data(0x00, (uint8_t*)rssi, SQUALL_COUNT);
   for (int i = 0; i < SQUALL_COUNT; i++) {
     printf("%d\t", rssi[i]);
   }

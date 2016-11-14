@@ -1,5 +1,5 @@
-#include <stdlib.h>
-#include <stdio.h>
+#include <string.h>
+#include <timer.h>
 
 #include "rf233-const.h"
 #include "rf233-config.h"
@@ -7,70 +7,39 @@
 #include "trx_access.h"
 #include "rf233.h"
 
-#define SQUALL_ADDRESS_SIZE 6
-#define MAX_COLLECTOR_COUNT 10
+typedef struct {
+  int8_t rssi;
+  int imix;
+} squall;
 
-void print_hex(const uint8_t *buf, int len) {
-  int i;
-  char* buf_str = (char*) malloc (2*len + 1);
-  char* buf_ptr = buf_str;
-  for (i = 0; i < len; i++) {
-      buf_ptr += sprintf(buf_ptr, "%02X", buf[i]);
-  }
-  sprintf(buf_ptr,"\n");
-  *(buf_ptr + 1) = '\0';
-  printf("%s\n", buf_str);
-  free(buf_str);
-}
+squall squalls[5];
 
-typedef struct Collector {
- uint16_t id;
- char closest_squall[SQUALL_ADDRESS_SIZE];
- char rssi;
-} Collector;
+int callback(void*, int, uint8_t); 
 
-static Collector collectors[MAX_COLLECTOR_COUNT];
-static int collector_count = 0;
-
-int callback(void* buffer, int buffer_len, uint16_t src, uint16_t dest, uint16_t pan_id) {
-
-  if (buffer_len < 3){
-    return 1;
-  }
-
-  uint8_t* bytes = (uint8_t*) buffer;
-
-  char rssi;
-  rssi = bytes[SQUALL_ADDRESS_SIZE];
-
-  //find the right collector
-  int collector_index = -1;
-  for (int i = 0; i < MAX_COLLECTOR_COUNT; i++){
-    if (collectors[i].id == src){
-        collector_index = i;
-        break;
+void print_squalls() {
+  char buf[6];
+  for (int i = 0; i < 5; i++) {
+    buf[i] = squalls[i].imix;
+    if (buf[i] == 0) {
+      buf[i] = 0xff;
     }
   }
-
-  //if it didn't find the right collector, make it create a new one in the next slot
-  if (collector_index == -1){
-      collector_index = collector_count;
-      collector_count ++;
-  }
-
-  for (int i = 0; i < SQUALL_ADDRESS_SIZE; i++) {
-    collectors[collector_index].closest_squall[i] = bytes[i];
-  }
-  collectors[collector_index].id = src; 
-  collectors[collector_index].rssi = rssi; 
-
-  return 0;
+  buf[5] = 0;
 }
 
-int main(void) {
-
+int main() { 
   rf233_init(0xab, 0xbc, 0xcd);
   rf233_rx_data(callback);
-
 }
 
+int callback(void* buffer, int len, uint8_t src) {
+  int8_t* rssis = (uint8_t*) buffer; 
+  for (int i = 0; i < 5; i ++) {
+    if (squalls[i].rssi > rssis[i]) {
+      squalls[i].rssi = rssis[i];
+      squalls[i].imix = src;
+    }
+  }
+  print_squalls();
+  return 0; 
+}
