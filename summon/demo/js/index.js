@@ -53,7 +53,7 @@ var app = {
 
 
       // if (!SIMULATE_PACKETS) {
-        var client = mqtt.connect("ws://imix.j2x.us:9001/mqtt");
+        var client = mqtt.connect("ws://171.65.166.160:9001/mqtt");
         client.on("connect", function () {
           client.subscribe('device/imix/0026e1690001');
         });
