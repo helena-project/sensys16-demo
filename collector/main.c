@@ -26,6 +26,6 @@ void ble_evt_adv_report(ble_evt_t* ble_evt) {
 }
 
 int main(void) {
-    simple_ble_scan_start();
+  simple_ble_scan_start();
 }
 
