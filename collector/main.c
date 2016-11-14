@@ -8,99 +8,65 @@
 #include "trx_access.h"
 #include "rf233.h"
 
-#define MAX_SQUALL_COUNT 10
-#define ADDRESS_SIZE 6
+#define SQUALL_COUNT 10
 
 typedef struct Squall {
- uint8_t address[ADDRESS_SIZE];
  int rssi;
 } Squall;
 
-static Squall squalls[MAX_SQUALL_COUNT];
-static int squall_count = 0;
+static Squall squalls[SQUALL_COUNT];
 
 /*
  * Sends the current status to the receiver
  * Sends the ID of the closest squall (one byte) and its RSSI (two bytes)
  */
 void send_to_receiver() {
-  int rssi = 0;
-  int sq_index = 0;
+  int rssi[SQUALL_COUNT];
 
-  for (int i = 0; i < MAX_SQUALL_COUNT; i++){
-    Squall sq = squalls[i];
-
-    if (sq.rssi > rssi){
-      sq_index = i;
-      rssi = sq.rssi;
-    }
+  for (int i = 0; i < SQUALL_COUNT; i++){
+    Squall *sq = &squalls[i];
+    rssi[i] = sq->rssi;
+    sq->rssi = 0;
   }
 
-  uint8_t buf[ADDRESS_SIZE + 1];
-  for (int i = 0; i < ADDRESS_SIZE; i++){
-    buf[i] = squalls[sq_index].address[i];
+  rf233_tx_data(0x00, (uint8_t*)rssi, sizeof(int) * SQUALL_COUNT);
+  for (int i = 0; i < SQUALL_COUNT; i++) {
+    printf("%d\t", rssi[i]);
   }
-  buf[ADDRESS_SIZE] = rssi;
+  printf("\n");
 
-  rf233_tx_data(0x00, buf, ADDRESS_SIZE + 1);
   delay_ms(10);
-}
-
-/*
- * Goes through an address buffer and checks if every element equals the address of the squall
- */
-static int addresses_match(Squall sq, uint8_t *buf){
-    for (int i = 0; i < ADDRESS_SIZE; i++){
-      if (sq.address[i] != buf[i]){
-        return 0;
-      }
-    }
-
-    return 1;
 }
 
 void adv_callback(int r0, int r1, int r3, void* ud) {
   uint8_t *buf = (uint8_t*)ud;
-  printf("Got data\n");
   if (buf[0] == 0) {
     // Adv packet
     // buf[1-6] address
     // buf[7] rssi
     // buf[8] advertising payload length
     // buf[9-...] payload
+    
+    if (buf[6] == 0xC0 &&
+        buf[5] == 0x98 &&
+        buf[4] == 0xE5) {
+      led_toggle(0);
 
-    uint8_t address[ADDRESS_SIZE];
-    for (int i = 0; i < ADDRESS_SIZE; i++){
-        address[i] = buf[i + 1];
-    }
-    uint8_t rssi = buf[7];
+      uint8_t id = buf[1];
+      int8_t rssi = (int8_t)buf[7];
 
-    //find the right squall
-    int sq_index = -1;
-    for (int i = 0; i < MAX_SQUALL_COUNT; i++){
-      if (addresses_match(squalls[i], address)){
-        sq_index = i;
-        break;
+      if (squalls[id % SQUALL_COUNT].rssi > rssi) {
+        squalls[id % SQUALL_COUNT].rssi = rssi;
       }
     }
-
-    //if it didn't find the right squall, make it create a new one in the next slot
-    if (sq_index == -1){
-        sq_index = squall_count;
-        squall_count ++;
-    }
-
-    for (int i = 0; i < ADDRESS_SIZE; i++){
-        squalls[sq_index].address[i] = address[i];
-    }
-    squalls[sq_index].rssi = rssi; 
   }
+  ble_advs_start();
 }
 
-int main () {
-    char adv_buf[10]; 
-    rf233_init(0xab, 0xbc, 0xcd);
+char adv_buf[64]; 
 
+int main () {
+    rf233_init(0xab, 0xbc, 0xcd);
     ble_advs_allow(adv_buf, sizeof(adv_buf));
     ble_advs_subscribe(adv_callback, adv_buf);
     ble_advs_start();
