@@ -1,11 +1,11 @@
 
 
 var squall_meta = [
-  'Brads Pocket',
-  'Next to Amit',
-  'Branden lost this one',
-  'Gravy',
-  'Playing pingpong'
+  'Squall 1',
+  'Squall 2',
+  'Squall 3',
+  'Squall 4',
+  'Squall 5'
 ];
 
 var squall_history = [];
