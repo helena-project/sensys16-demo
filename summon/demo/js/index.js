@@ -132,6 +132,7 @@ var app = {
 
       var imix_id = squall_to_imix[squall_id];
       if (imix_id <= 4) {
+        console.log("Assigning: squall: " + squall_id + " to imix: " + imix_id);
         var index = attached_squalls[imix_id];
         var x = positions[imix_id].x;
         var y = positions[imix_id].y + (index * 35);
@@ -146,6 +147,14 @@ var app = {
         $('#squall'+squall_id+'_name').text(squall_meta[squall_id]);
 
         attached_squalls[imix_id] += 1;
+      } else {
+        // Hide!
+        console.log("Hiding squall: " + squall_id);
+        $('#squall' + squall_id).attr('x', 4000);
+        $('#squall' + squall_id).attr('y', 4000);
+        $('#squall'+squall_id+'_name').attr('x', 4000);
+        $('#squall'+squall_id+'_name').attr('y', 4000);
+        $('#squall'+squall_id+'_name').text(squall_meta[squall_id]);
       }
     }
 
