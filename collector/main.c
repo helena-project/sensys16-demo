@@ -8,7 +8,7 @@
 #include "trx_access.h"
 #include "rf233.h"
 
-#define SQUALL_COUNT 10
+#define SQUALL_COUNT 5
 
 typedef struct Squall {
  int rssi;
@@ -49,14 +49,15 @@ void adv_callback(int r0, int r1, int r3, void* ud) {
     
     if (buf[6] == 0xC0 &&
         buf[5] == 0x98 &&
-        buf[4] == 0xE5) {
+        buf[4] == 0xE5 &&
+        buf[1] < SQUALL_COUNT) {
       led_toggle(0);
 
       uint8_t id = buf[1];
       int8_t rssi = (int8_t)buf[7];
 
-      if (squalls[id % SQUALL_COUNT].rssi > rssi) {
-        squalls[id % SQUALL_COUNT].rssi = rssi;
+      if (squalls[id].rssi > rssi) {
+        squalls[id].rssi = rssi;
       }
     }
   }
