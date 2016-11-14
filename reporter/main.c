@@ -7,6 +7,12 @@
 #include <nrf51_serialization.h>
 #include <timer.h>
 
+#include "rf233-const.h"
+#include "rf233-config.h"
+#include "rf233-arch.h"
+#include "trx_access.h"
+#include "rf233.h"
+
 #include "room_location_service.h"
 
 
@@ -72,6 +78,38 @@ static uint32_t next_rand(void) {
   return w;
 }
 
+#define MAX_SQUALL_COUNT 10
+
+typedef struct Squall {
+ char id;
+ int rsi;
+} Squall;
+
+static Squall squalls[MAX_SQUALL_COUNT];
+
+/*
+ * Sends the current status to the receiver
+ * Sends the ID of the closest squall (one byte) and its RSI (two bytes)
+ */
+void send_to_receiver() {
+  char id;
+  int rsi = 0;
+
+  for (int i = 0; i < MAX_SQUALL_COUNT; i++){
+    Squall sq = squalls[i];
+
+    if (sq.rsi > rsi){
+      id = sq.id;
+      rsi = sq.rsi;
+    }
+  }
+
+  char buf[3] = { id, (char)(rsi & 0x11110000), (char)(rsi & 0x00001111) };
+
+  rf233_tx_data(0x00, buf, 3);
+  delay_ms(10);
+}
+
 int main () {
     printf("Starting BLE serialization example\n");
 
@@ -93,11 +131,21 @@ int main () {
     // And update advertising data
     eddystone_adv(eddystone_url, &srdata);
 
+    // These values are channel, from_addr, and pan_id respectively and may need to be changed
+    rf233_init(0xab, 0xbc, 0xcd);
+
+    char loopNumber = 0;
     while(1) {
       delay_ms(500);
       for (int i = 0; i < 1; i++) {
         int8_t loc = (int8_t)next_rand();
         room_location_update_item(i, loc);
+      }
+
+      loopNumber++;
+      if (loopNumber % 20 == 0){ //loops are ~500ms, so this will only send data over the rf233 every ~10 seconds
+        send_to_receiver();
+        loopNumber = 0;
       }
     }
 }
