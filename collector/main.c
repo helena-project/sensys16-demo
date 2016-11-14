@@ -1,6 +1,5 @@
 #include <stdlib.h>
-#include "ble.h"
-#include "simple_ble.h"
+#include <stdio.h>
 
 void print_hex(const uint8_t *buf, int len) {
   int i;
@@ -15,17 +14,6 @@ void print_hex(const uint8_t *buf, int len) {
   free(buf_str);
 }
 
-void ble_evt_adv_report(ble_evt_t* ble_evt) {
-  ble_gap_evt_t *gap_evt = &ble_evt->evt.gap_evt;
-  ble_gap_evt_adv_report_t *adv_report = &gap_evt->params.adv_report;
-
-  int8_t rssi = adv_report->rssi;
-  printf("RSSI: %d\n", rssi);
-  print_hex(adv_report->peer_addr.addr, 6);
-  print_hex(adv_report->data, 31);
-}
-
 int main(void) {
-  simple_ble_scan_start();
 }
 
