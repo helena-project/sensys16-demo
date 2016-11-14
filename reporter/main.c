@@ -32,7 +32,7 @@ typedef struct Collector {
 static Collector collectors[MAX_COLLECTOR_COUNT];
 static int collector_count = 0;
 
-int callback(void* buffer, int buffer_len) {
+int callback(void* buffer, int buffer_len, uint16_t src, uint16_t dest, uint16_t pan_id) {
 
   if (buffer_len < 3){
     return 1;

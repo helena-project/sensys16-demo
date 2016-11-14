@@ -1,6 +1,7 @@
 #include <string.h>
 #include <timer.h>
 
+#include "uartadv.h"
 #include "rf233-const.h"
 #include "rf233-config.h"
 #include "rf233-arch.h"
@@ -94,6 +95,7 @@ void adv_callback(int r0, int r1, int r3, void* ud) {
 }
 
 int main () {
+    char adv_buf[10]; 
     rf233_init(0xab, 0xbc, 0xcd);
 
     ble_advs_allow(adv_buf, sizeof(adv_buf));
