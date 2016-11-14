@@ -7,6 +7,9 @@
 #include "trx_access.h"
 #include "rf233.h"
 
+#define SQUALL_ADDRESS_SIZE 6
+#define MAX_COLLECTOR_COUNT 10
+
 void print_hex(const uint8_t *buf, int len) {
   int i;
   char* buf_str = (char*) malloc (2*len + 1);
@@ -20,6 +23,15 @@ void print_hex(const uint8_t *buf, int len) {
   free(buf_str);
 }
 
+typedef struct Collector {
+ char id;
+ char closest_squall[SQUALL_ADDRESS_SIZE];
+ char rssi;
+} Collector;
+
+static Collector collectors[MAX_COLLECTOR_COUNT];
+static int collector_count = 0;
+
 int callback(void* buffer, int buffer_len) {
 
   if (buffer_len < 3){
@@ -27,10 +39,24 @@ int callback(void* buffer, int buffer_len) {
   }
 
   uint8_t* bytes = (uint8_t*) buffer;
-  char squall_id = bytes[0];
-  int rsi = (int)bytes[1] | (int)bytes[2];
 
-  //TODO: do something with the id and rsi of the closest squall
+  char squall_address[SQUALL_ADDRESS_SIZE];
+  char rssi;
+
+  for (int i = 0; i < SQUALL_ADDRESS_SIZE; i++){
+    squall_address[i] = bytes[i];
+  }
+  rssi = bytes[SQUALL_ADDRESS_SIZE];
+
+  //TODO: find the right collector
+
+  //if it didn't find the right squall, make it create a new one in the next slot
+  if (collector_index == -1){
+      collector_index = collector_count;
+      collector_count ++;
+  }
+
+  collectors[collector_index] = { collector_index, address, rssi };
 
   return 0;
 }
