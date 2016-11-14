@@ -44,6 +44,10 @@ void adv_callback(int r0, int r1, int r3, void* ud) {
   printf("Got data\n");
   if (buf[0] == 0) {
     // Adv packet
+    // buf[1-6] address
+    // buf[7] rssi
+    // buf[8] advertising payload length
+    // buf[9-...] payload
   }
 }
 
