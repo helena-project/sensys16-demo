@@ -55,7 +55,7 @@ var app = {
       // if (!SIMULATE_PACKETS) {
         var client = mqtt.connect("ws://171.65.166.160:9001/mqtt");
         client.on("connect", function () {
-          client.subscribe('device/imix/0026e1690001');
+          client.subscribe('device/imix/c098e500c86d');
         });
         client.on("message", function(topic, payload) {
           var data = JSON.parse(payload.toString());
