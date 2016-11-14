@@ -12,7 +12,7 @@
 #define ADDRESS_SIZE 6
 
 typedef struct Squall {
- char address[ADDRESS_SIZE];
+ uint8_t address[ADDRESS_SIZE];
  int rssi;
 } Squall;
 
@@ -24,21 +24,21 @@ static int squall_count = 0;
  * Sends the ID of the closest squall (one byte) and its RSSI (two bytes)
  */
 void send_to_receiver() {
-  char address[ADDRESS_SIZE];
   int rssi = 0;
+  int sq_index = 0;
 
   for (int i = 0; i < MAX_SQUALL_COUNT; i++){
     Squall sq = squalls[i];
 
     if (sq.rssi > rssi){
-      address = sq.address;
+      sq_index = i;
       rssi = sq.rssi;
     }
   }
 
-  char buf[ADDRESS_SIZE + 1];
+  uint8_t buf[ADDRESS_SIZE + 1];
   for (int i = 0; i < ADDRESS_SIZE; i++){
-    buf[i] = address[i];
+    buf[i] = squalls[sq_index].address[i];
   }
   buf[ADDRESS_SIZE] = rssi;
 
@@ -69,16 +69,16 @@ void adv_callback(int r0, int r1, int r3, void* ud) {
     // buf[8] advertising payload length
     // buf[9-...] payload
 
-    char address[ADDRESS_SIZE];
+    uint8_t address[ADDRESS_SIZE];
     for (int i = 0; i < ADDRESS_SIZE; i++){
-        address[i] = address[i + 1];
+        address[i] = buf[i + 1];
     }
-    char rssi = buf[7];
+    uint8_t rssi = buf[7];
 
     //find the right squall
     int sq_index = -1;
     for (int i = 0; i < MAX_SQUALL_COUNT; i++){
-      if (addresses_match(squalls[i])){
+      if (addresses_match(squalls[i], address)){
         sq_index = i;
         break;
       }
@@ -90,7 +90,10 @@ void adv_callback(int r0, int r1, int r3, void* ud) {
         squall_count ++;
     }
 
-    squalls[sq_index] = { address, rssi };
+    for (int i = 0; i < ADDRESS_SIZE; i++){
+        squalls[sq_index].address[i] = address[i];
+    }
+    squalls[sq_index].rssi = rssi; 
   }
 }
 

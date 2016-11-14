@@ -40,12 +40,7 @@ int callback(void* buffer, int buffer_len, uint16_t src, uint16_t dest, uint16_t
 
   uint8_t* bytes = (uint8_t*) buffer;
 
-  char squall_address[SQUALL_ADDRESS_SIZE];
   char rssi;
-
-  for (int i = 0; i < SQUALL_ADDRESS_SIZE; i++){
-    squall_address[i] = bytes[i];
-  }
   rssi = bytes[SQUALL_ADDRESS_SIZE];
 
   //find the right collector
@@ -63,7 +58,11 @@ int callback(void* buffer, int buffer_len, uint16_t src, uint16_t dest, uint16_t
       collector_count ++;
   }
 
-  collectors[collector_index] = { src, address, rssi };
+  for (int i = 0; i < SQUALL_ADDRESS_SIZE; i++) {
+    collectors[collector_index].closest_squall[i] = bytes[i];
+  }
+  collectors[collector_index].id = src; 
+  collectors[collector_index].rssi = rssi; 
 
   return 0;
 }
